@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <h1>Welcome to Chat</h1>
+  <script>
+    // Initialize socket.io connection
+    const socket = io();
+
+    // Event listener for successful connection
+    socket.on('connect', () => {
+      console.log('Socket connected');
+      socket.send("hello from server");
+    });
+
+    // Event listener for connection errors
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+    });
+
+    // Get the username from the page
+    const username = document.getElementById('username').textContent.trim();
+  
+    // Emit a 'join' event with the username to notify the server
+    socket.emit('join', username);
+    
+
+    // Get references to DOM elements
+    const chatWindow = document.getElementById('chat-window');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-btn');
+
+    // Event listener for incoming messages
+    socket.on('message', (message) => {
+      const messageElement = document.createElement('div');
+      messageElement.innerText = message;
+      chatWindow.appendChild(messageElement);
+    });
+
+    // Event listener for sending messages
+    function sendMessage() {
+      const message = messageInput.value;
+      const msg = {
+        message: message,
+        sender: 'client',
+        senderId: socket.id
+      }
+      socket.emit('chat', message);
+      messageInput.value = ''; // Clear the message input field after sending
+    };
+
+  </script>
+  <div id="chat-window"></div>
+  <input type="text" id="message-input" placeholder="Type a message...">
+  <button onclick='sendMessage()' id="send-btn">Send</button>
+  
+</body>
+</html>
